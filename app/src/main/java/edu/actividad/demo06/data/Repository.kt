@@ -4,10 +4,24 @@ import android.util.Log
 import edu.actividad.demo06.model.City
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.runBlocking
 
 class Repository(db: CitiesRoomDB, private val ds: RemoteDataSource) {
     private val TAG = Repository::class.java.simpleName
     private val localDataSource = LocalDataSource(db.citiesDao())
+    private val fbRepository = RepositoryFirebase()
+
+    fun createDocument() {
+        fbRepository.createDocument()
+    }
+
+    fun fetchArrayCities(): Flow<List<Map<String, String>>> = runBlocking {
+        fbRepository.fetchArrayCities()
+    }
+
+    fun addCity(city: String, countryCode: String) {
+        fbRepository.addCity(city, countryCode)
+    }
 
     fun fetchCities(): Flow<List<City>> {
         return flow {
