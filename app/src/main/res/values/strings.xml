@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Demo06</string>
+    <string name="default_city">Ciudad</string>
+    <string name="txt_is_capital">Capital</string>
+    <string name="txt_country">(%s)</string>
+    <string name="txt_no_info">No se dispone de información</string>
+    <string name="txt_population">Habitantes: %d</string>
+    <string name="txt_lonlat">Lon: %1$s Lat: %2$s</string>
+</resources>

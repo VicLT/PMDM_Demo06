@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "59391419332",
+    "project_id": "demo06-vlt",
+    "storage_bucket": "demo06-vlt.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:59391419332:android:ee6707b89a896aba86fa91",
+        "android_client_info": {
+          "package_name": "edu.actividad.demo06"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCVq7N39MWReAtLb89Xw1_2-Gl8w8KT5aE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
