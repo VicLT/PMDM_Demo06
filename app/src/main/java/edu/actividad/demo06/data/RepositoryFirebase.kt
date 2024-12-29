@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.callbackFlow
 class RepositoryFirebase {
     private val TAG = RepositoryFirebase::class.java.simpleName
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
-    private val namespace: String = "VLT"
+    private val namespace: String = "Víctor Lamas"
 
     // Create a document in Firebase
     fun createDocument() {
