@@ -11,6 +11,18 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
     val currentCities
         get() = _currentCities
 
+    private var _currentVisitedCities = repository.fetchArrayCities()
+    val currentVisitedCities
+        get() = _currentVisitedCities
+
+    init {
+        repository.createDocument()
+    }
+
+    fun addCity(city: String, countryCode: String) {
+        repository.addCity(city, countryCode)
+    }
+
     fun updateListCities(query: String) {
         viewModelScope.launch {
             _currentCities = if (query.isNotBlank())

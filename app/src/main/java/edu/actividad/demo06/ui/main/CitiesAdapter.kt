@@ -57,6 +57,15 @@ class CitiesAdapter(
             itemView.setOnClickListener {
                 onCityClick(city)
             }
+
+            if (city.visited > 0) {
+                binding.tvVisited.text = String.format(city.visited.toString())
+                binding.tvVisited.visibility = View.VISIBLE
+                binding.ivVisited.visibility = View.VISIBLE
+            } else {
+                binding.tvVisited.visibility = View.GONE
+                binding.ivVisited.visibility = View.GONE
+            }
         }
     }
 }

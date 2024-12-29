@@ -11,13 +11,17 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import edu.actividad.demo06.CityApplication
 import edu.actividad.demo06.data.RemoteDataSource
 import edu.actividad.demo06.data.Repository
 import edu.actividad.demo06.databinding.ActivityMainBinding
 import edu.actividad.demo06.ui.maps.DetailMapActivity
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -34,6 +38,7 @@ class MainActivity : AppCompatActivity() {
     private val adapter by lazy {
         CitiesAdapter(
             onCityClick =  { city ->
+                vm.addCity(city.name!!, city.country!!)
                 DetailMapActivity.navigate(this@MainActivity, city)
             }
         )
@@ -62,7 +67,16 @@ class MainActivity : AppCompatActivity() {
         binding.mRecycler.setHasFixedSize(true)
         binding.mRecycler.adapter = adapter
 
-        populateCities()
+        // Disable refresh items animation on RecyclerView
+        binding.mRecycler.itemAnimator!!.apply {
+            changeDuration = 0
+        }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                populateCities()
+            }
+        }
     }
 
     override fun onStart() {
@@ -80,30 +94,43 @@ class MainActivity : AppCompatActivity() {
                     query = newText
                     vm.updateListCities(query!!)
 
-                    populateCities()
+                    lifecycleScope.launch {
+                        populateCities()
+                    }
                     return true
                 }
             }
         )
     }
 
-    // Obtiene los datos iniciales y realiza la búsqueda
-    private fun populateCities() {
-        lifecycleScope.launch {
-            vm.currentCities.catch {
-                Toast.makeText(
-                    this@MainActivity,
-                    it.message,
-                    Toast.LENGTH_SHORT
-                ).show()
-            }.collect { cities ->
-                Log.d(TAG, "onCreate: $cities")
+    // Method responsible for obtaining the initial data and search
+    private suspend fun populateCities() {
+        combine(vm.currentCities, vm.currentVisitedCities) { cities, visitedCities ->
+            Log.e(TAG, "Ciudades actualizadas: ${visitedCities.size} - $visitedCities")
 
-                binding.tvNoInfo.visibility =
-                    if (cities.isEmpty()) View.VISIBLE else View.GONE
+            binding.tvNoInfo.visibility = if (cities.isEmpty()) View.VISIBLE else View.GONE
 
-                adapter.submitList(cities)
+            // A new list of cities with the visited cities updated
+            val updatedCities = cities.map { city ->
+                val cityFound = visitedCities.find {
+                    it["name"] == city.name && it["countryCode"] == city.country
+                }
+                if (cityFound != null) {
+                    // We use copy to create a new object with the visited field updated
+                    city.copy(visited = city.visited + 1)
+                } else {
+                    city
+                }
             }
-        }
+
+            Log.i(TAG, "populateCities: $updatedCities")
+            adapter.submitList(updatedCities)
+        }.catch {
+            Toast.makeText(
+                this@MainActivity,
+                it.message,
+                Toast.LENGTH_SHORT
+            ).show()
+        }.collect()
     }
 }

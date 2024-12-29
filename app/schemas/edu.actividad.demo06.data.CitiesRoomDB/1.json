@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "0617cb75b8c2279e5f6b1a96a8a17e21",
+    "identityHash": "707b28c69b1ef3f21ca16de14f117361",
     "entities": [
       {
         "tableName": "City",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`country` TEXT, `isCapital` INTEGER, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `name` TEXT, `population` INTEGER, `region` TEXT, PRIMARY KEY(`latitude`, `longitude`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`country` TEXT, `isCapital` INTEGER, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `name` TEXT, `population` INTEGER, PRIMARY KEY(`latitude`, `longitude`))",
         "fields": [
           {
             "fieldPath": "country",
@@ -43,12 +43,6 @@
             "columnName": "population",
             "affinity": "INTEGER",
             "notNull": false
-          },
-          {
-            "fieldPath": "region",
-            "columnName": "region",
-            "affinity": "TEXT",
-            "notNull": false
           }
         ],
         "primaryKey": {
@@ -65,7 +59,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0617cb75b8c2279e5f6b1a96a8a17e21')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '707b28c69b1ef3f21ca16de14f117361')"
     ]
   }
 }
