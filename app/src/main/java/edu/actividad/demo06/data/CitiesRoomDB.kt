@@ -8,7 +8,7 @@ import androidx.room.Query
 import androidx.room.RoomDatabase
 import edu.actividad.demo06.model.City
 
-@Database(entities = [City::class], version =  1)
+@Database(entities = [City::class], version = 1)
 abstract class CitiesRoomDB : RoomDatabase() {
     abstract fun citiesDao(): CitiesDao
 }

@@ -41,6 +41,9 @@ class Repository(db: CitiesRoomDB, private val ds: RemoteDataSource) {
                     // Se inserta la información en la DB.
                     localDataSource.insertCities(resultAPI)
                 }
+
+                // Se recupera la información de la base de datos actualizada.
+                resultDB = localDataSource.getCities()
             } catch (e: Exception) {
                 // Se emite el error.
                 Log.e(TAG, "fetchCities: ${e.message}")

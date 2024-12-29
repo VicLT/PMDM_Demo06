@@ -145,8 +145,8 @@ class DetailMapActivity : AppCompatActivity() {
             tvCityName.text = city.name
             tvCityName.append(getString(R.string.txt_country, city.country))
             tvCityInfo.text =
-                if (city.isCapital == true) {
-                    getString(R.string.txt_is_capital)
+                if (city.isCapital!!) {
+                    "${getString(R.string.txt_is_capital)}\n"
                 } else {
                     ""
                 }
