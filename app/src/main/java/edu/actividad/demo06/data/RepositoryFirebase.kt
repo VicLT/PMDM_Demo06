@@ -10,7 +10,24 @@ import kotlinx.coroutines.flow.callbackFlow
 class RepositoryFirebase {
     private val TAG = RepositoryFirebase::class.java.simpleName
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val collectionPath = "demo06"
     private val namespace: String = "Víctor Lamas"
+
+    // Get all documents ID from a collection in Firebase
+    /*fun getAllDocumentsId() {
+        db.collection(collectionPath).get().addOnSuccessListener { querySnapshot ->
+            if (!querySnapshot.isEmpty) {
+                documentsId.clear()
+                for (document in querySnapshot.documents) {
+                    val documentId = document.id
+                    documentsId.add(documentId)
+                    Log.i(TAG, "getAllDocumentsId: Document: $documentId")
+                }
+            }
+        }.addOnFailureListener { e ->
+            Log.e(TAG, "getAllNamespaceDocuments: get failed with ", e)
+        }
+    }*/
 
     // Create a document in Firebase
     fun createDocument() {
@@ -54,44 +71,50 @@ class RepositoryFirebase {
             }
     }
 
-    // Get array of cities from a document in Firebase
-    fun fetchArrayCities(): Flow<List<Map<String, String>>> = callbackFlow {
-        val listenerRegistration = db.collection("demo06").document(namespace)
-            .addSnapshotListener { documentSnapshot, e ->
+    // Get array of cities from all documents in Firebase
+    fun fetchArrayAllCitiesDocs(): Flow<List<Map<Map<String, String>, Int>>> = callbackFlow {
+        val listenerRegistration = db.collection(collectionPath)
+            .addSnapshotListener { snapshots, e ->
                 if (e != null) {
-                    Log.e(TAG, "fetchArrayCities: get failed with ${e.message}")
-                    close(e) // Close the flow with an exception
+                    Log.e(TAG, "fetchArrayAllCitiesDocs: Listen failed.", e)
+                    close(e) // Cierra el flujo con la excepción
                     return@addSnapshotListener
                 }
 
-                if (documentSnapshot != null && documentSnapshot.exists()) {
-                    Log.i(TAG, "fetchArrayCities: Data: ${documentSnapshot.data}")
+                if (snapshots != null) {
+                    val globalCount = mutableMapOf<Map<String, String>, Int>()
 
-                    // 1. as? List<*>: Realiza un casting seguro a una lista genérica
-                    //      (List<*>) para evitar errores en tiempo de ejecución.
-                    // 2. mapNotNull filtra elementos que no sean mapas, asegurando
-                    //      que solo procesas datos válidos
-                    // 3. filterKeys y filterValues filtran las claves y los valores
-                    //      para garantizar que sean del tipo String.
-                    // 4. mapKeys y mapValues realizan el casting seguro de las claves
-                    //      y valores a String.
-                    val cities: List<Map<String, String>> =
-                        (documentSnapshot.get("cities") as? List<*>)
-                            ?.mapNotNull { it as? Map<*, *> } // Convertir cada elemento
-                            ?.map { cityMap ->
-                                cityMap.filterKeys { it is String }
-                                    .filterValues { it is String }
-                                    .mapKeys { it.key as String }
-                                    .mapValues { it.value as String }
-                            } ?: emptyList()
+                    snapshots.documents.forEach { document ->
+                        val cities: List<Map<String, String>> =
+                            (document.get("cities") as? List<*>)
+                                ?.mapNotNull { it as? Map<*, *> }
+                                ?.map { cityMap ->
+                                    cityMap.filterKeys { it is String }
+                                        .filterValues { it is String }
+                                        .mapKeys { it.key as String }
+                                        .mapValues { it.value as String }
+                                } ?: emptyList()
 
-                    trySend(cities) // Send data to the flow
+                        // Agrupa por "name" y "countryCode" y cuenta las ocurrencias
+                        val cityCount = cities.groupingBy { it }.eachCount()
+
+                        // Combina los conteos locales en el mapa global
+                        cityCount.forEach { (cityKey, count) ->
+                            globalCount[cityKey] = globalCount.getOrDefault(cityKey, 0) + count
+                        }
+                    }
+
+                    // Convierte el mapa global en la lista requerida
+                    val result = globalCount.map { mapOf(it.key to it.value) }
+                    trySend(result) // Envía la lista al flujo
+                    Log.i(TAG, "fetchArrayAllCitiesDocs: Result -> $result")
                 } else {
-                    Log.e(TAG, "fetchArrayCities: No such document")
-                    trySend(emptyList()) // Send empty list to the flow
+                    Log.i(TAG, "fetchArrayAllCitiesDocs: No se encontraron documentos.")
+                    trySend(emptyList()) // Envía lista vacía al flujo
                 }
             }
-        // Close the listener when the flow is closed
+
+        // Cierra el listener cuando el flujo sea cerrado
         awaitClose { listenerRegistration.remove() }
     }
 }

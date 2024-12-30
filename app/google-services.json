@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "59391419332",
-    "project_id": "demo06-vlt",
-    "storage_bucket": "demo06-vlt.firebasestorage.app"
+    "project_number": "548924943780",
+    "project_id": "demo06-jcn",
+    "storage_bucket": "demo06-jcn.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:59391419332:android:ee6707b89a896aba86fa91",
+        "mobilesdk_app_id": "1:548924943780:android:4dffbab8528ac8c7756531",
         "android_client_info": {
           "package_name": "edu.actividad.demo06"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCVq7N39MWReAtLb89Xw1_2-Gl8w8KT5aE"
+          "current_key": "AIzaSyBAYKHQ8hsyW0fadBUG2Kuw5_pfil0UPPQ"
         }
       ],
       "services": {

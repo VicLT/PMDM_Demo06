@@ -106,26 +106,37 @@ class MainActivity : AppCompatActivity() {
     // Method responsible for obtaining the initial data and search
     private suspend fun populateCities() {
         combine(vm.currentCities, vm.currentVisitedCities) { cities, visitedCities ->
-            Log.e(TAG, "Ciudades actualizadas: ${visitedCities.size} - $visitedCities")
+            Log.i(TAG, "Ciudades actualizadas: ${visitedCities.size} - $visitedCities")
 
             binding.tvNoInfo.visibility = if (cities.isEmpty()) View.VISIBLE else View.GONE
 
-            // A new list of cities with the visited cities updated
-            val updatedCities = cities.map { city ->
-                val cityFound = visitedCities.find {
-                    it["name"] == city.name && it["countryCode"] == city.country
-                }
-                if (cityFound != null) {
-                    // We use copy to create a new object with the visited field updated
-                    city.copy(visited = city.visited + 1)
+            // Nueva lista de ciudades con las visitas actualizadas
+            val updatedCities = cities.flatMap { city ->
+                // Buscar la ciudad en visitedCities por "name" y "countryCode"
+                val totalVisits = visitedCities
+                    .filter { visitedCity ->
+                        val internalMap = visitedCity.keys.firstOrNull()
+                        val name = internalMap?.get("name")
+                        val countryCode = internalMap?.get("countryCode")
+                        name == city.name && countryCode == city.country
+                    }
+                    .sumOf { visitedCity ->
+                        // Sumar el total de visitas de todos los documentos que coinciden
+                        visitedCity.values.firstOrNull() ?: 0 // Si no hay valor, asignamos 0
+                    }
+
+                // Si la ciudad tiene visitas, actualizamos su valor de "visited"
+                if (totalVisits > 0) {
+                    listOf(city.copy(visited = totalVisits)) // Se asigna el total de visitas acumuladas
                 } else {
-                    city
+                    listOf(city.copy(visited = 0)) // Si no tiene visitas, se asigna 0
                 }
             }
 
             Log.i(TAG, "populateCities: $updatedCities")
-            adapter.submitList(updatedCities)
+            adapter.submitList(updatedCities) // Actualiza la lista en el adaptador
         }.catch {
+            // Si ocurre un error, mostrar un mensaje de Toast
             Toast.makeText(
                 this@MainActivity,
                 it.message,

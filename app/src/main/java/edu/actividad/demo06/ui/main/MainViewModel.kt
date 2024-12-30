@@ -11,7 +11,7 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
     val currentCities
         get() = _currentCities
 
-    private var _currentVisitedCities = repository.fetchArrayCities()
+    private var _currentVisitedCities = repository.fetchArrayAllCitiesDocs()
     val currentVisitedCities
         get() = _currentVisitedCities
 

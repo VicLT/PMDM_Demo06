@@ -11,12 +11,12 @@ class Repository(db: CitiesRoomDB, private val ds: RemoteDataSource) {
     private val localDataSource = LocalDataSource(db.citiesDao())
     private val fbRepository = RepositoryFirebase()
 
-    fun createDocument() {
-        fbRepository.createDocument()
+    fun fetchArrayAllCitiesDocs(): Flow<List<Map<Map<String, String>, Int>>> = runBlocking {
+        fbRepository.fetchArrayAllCitiesDocs()
     }
 
-    fun fetchArrayCities(): Flow<List<Map<String, String>>> = runBlocking {
-        fbRepository.fetchArrayCities()
+    fun createDocument() {
+        fbRepository.createDocument()
     }
 
     fun addCity(city: String, countryCode: String) {
