@@ -26,6 +26,17 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
+/**
+ * Displays stored cities and allows searching all of them.
+ *
+ * @property binding Reference to the binding of the activity to access the views.
+ * @property TAG The tag for the log.
+ * @property query The query to search for cities.
+ * @property lastTotalVisits The last total number of visits.
+ * @property vm Instance of the ViewModel to handle the logic of the cities.
+ * @property adapter Adapter for displaying cities in the RecyclerView.
+ * @author Víctor Lamas
+ */
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val TAG = MainActivity::class.java.simpleName
@@ -47,6 +58,11 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    /**
+     * Initializes the activity.
+     *
+     * @param savedInstanceState The saved instance state.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -64,16 +80,16 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        // Crear el canal de notificaciones
+        // Create the notification channel.
         createNotificationChannel(this)
 
-        // Bloqueo de la rotación
+        // Rotation lock.
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
 
         binding.mRecycler.setHasFixedSize(true)
         binding.mRecycler.adapter = adapter
 
-        // Disable refresh items animation on RecyclerView
+        // Disable refresh items animation on RecyclerView.
         binding.mRecycler.itemAnimator!!.apply {
             changeDuration = 0
         }
@@ -85,16 +101,35 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Configures the search handling in the SearchView to update the list of
+     * cities according to the text entered.
+     */
     override fun onStart() {
         super.onStart()
 
-        // Gestión de la búsqueda
+        // Search management.
         binding.searchView.setOnQueryTextListener(
             object : SearchView.OnQueryTextListener {
+                /**
+                 * Called when the user submits the query.
+                 *
+                 * @param query The query text that is to be submitted
+                 * @return true if the query has been handled by the listener,
+                 * false to let the SearchView perform the default action.
+                 */
                 override fun onQueryTextSubmit(query: String?): Boolean {
                     return false
                 }
 
+                /**
+                 * Called when the query text is changed by the user.
+                 *
+                 * @param newText the new content of the query text field.
+                 * @return false if the SearchView should perform the default
+                 * action of showing any suggestions if available. True if the
+                 * action was handled by the listener.
+                 */
                 override fun onQueryTextChange(newText: String?): Boolean {
                     Log.d(TAG, "onQueryTextChange: $newText")
                     query = newText
@@ -109,27 +144,34 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    // Method responsible for obtaining the initial data and search
+    /**
+     * Updates cities with visits and displays a notification if number changes.
+     *
+     * @return The list of cities.
+     * @throws Exception If an error occurs.
+     */
     private suspend fun populateCities() {
         combine(vm.currentCities, vm.currentVisitedCities) { cities, visitedCities ->
             Log.i(TAG, "Ciudades actualizadas: ${visitedCities.size} - $visitedCities")
 
             binding.tvNoInfo.visibility = if (cities.isEmpty()) View.VISIBLE else View.GONE
 
-            // Nueva lista de ciudades con las visitas actualizadas
+            // Mapping cities with the total number of visitors.
             val updatedCities = cities.flatMap { city ->
-                // Buscar la ciudad en visitedCities por "name" y "countryCode"
                 val totalVisits = visitedCities
                     .filter { visitedCity ->
+                        // Filter visited cities by name and country code.
                         val internalMap = visitedCity.keys.firstOrNull()
                         val name = internalMap?.get("name")
                         val countryCode = internalMap?.get("countryCode")
                         name == city.name && countryCode == city.country
                     }
                     .sumOf { visitedCity ->
-                        visitedCity.values.firstOrNull() ?: 0 // Sumar las visitas
+                        // Sum of visits from overlapping cities.
+                        visitedCity.values.firstOrNull() ?: 0
                     }
 
+                // Create a city with updated visits.
                 if (totalVisits > 0) {
                     listOf(city.copy(visited = totalVisits))
                 } else {
@@ -140,15 +182,15 @@ class MainActivity : AppCompatActivity() {
             Log.i(TAG, "populateCities: $updatedCities")
             adapter.submitList(updatedCities)
 
-            // Calcular el total de visitas acumuladas
+            // Calculates the total number of current visits.
             val currentTotalVisits = visitedCities.sumOf { it.values.firstOrNull() ?: 0 }
 
-            // Evitar notificación en la primera carga
+            // Sends a notification if visits have increased.
             if (lastTotalVisits != null && currentTotalVisits > lastTotalVisits!!) {
                 sendNotification(this@MainActivity)
             }
 
-            // Actualizar el último total de visitas conocido
+            // Updates total visits for future comparisons
             lastTotalVisits = currentTotalVisits
         }.catch {
             Toast.makeText(

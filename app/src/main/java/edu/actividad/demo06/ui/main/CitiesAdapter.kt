@@ -10,10 +10,23 @@ import edu.actividad.demo06.R
 import edu.actividad.demo06.databinding.CityItemBinding
 import edu.actividad.demo06.model.City
 
+/**
+ * Adapter for the cities list.
+ *
+ * @param onCityClick The action to perform when a city is clicked.
+ * @author Víctor Lamas
+ */
 class CitiesAdapter(
     private val onCityClick: (City) -> Unit
 ) : ListAdapter<City, CitiesAdapter.ViewHolder>(DiffCitiesCallback()) {
 
+    /**
+     * Creates a view holder.
+     *
+     * @param parent The parent view group.
+     * @param viewType The view type.
+     * @return The view holder.
+     */
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
@@ -27,10 +40,21 @@ class CitiesAdapter(
         )
     }
 
+    /**
+     * Binds the view holder with the city.
+     *
+     * @param holder The view holder.
+     * @param position The position of the city.
+     */
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
 
+    /**
+     * Represents a view holder.
+     *
+     * @param view The view.
+     */
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         private val binding = CityItemBinding.bind(view)
         fun bind(city: City) {
@@ -70,12 +94,29 @@ class CitiesAdapter(
     }
 }
 
+/**
+ * Represents a diff callback for the cities.
+ */
 class DiffCitiesCallback : DiffUtil.ItemCallback<City>() {
+    /**
+     * Checks if the items are the same.
+     *
+     * @param oldItem The old item.
+     * @param newItem The new item.
+     * @return True if the items are the same, false otherwise.
+     */
     override fun areItemsTheSame(oldItem: City, newItem: City): Boolean {
         return oldItem.latitude == newItem.latitude
                 && oldItem.longitude == newItem.longitude
     }
 
+    /**
+     * Checks if the contents are the same.
+     *
+     * @param oldItem The old item.
+     * @param newItem The new item.
+     * @return True if the contents are the same, false otherwise.
+     */
     override fun areContentsTheSame(oldItem: City, newItem: City): Boolean {
         return oldItem == newItem
     }

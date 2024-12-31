@@ -6,82 +6,97 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 
+/**
+ * Responsible for managing the data of the application.
+ *
+ * @param db The database of cities.
+ * @param ds The data source of cities.
+ * @property TAG The tag for the log.
+ * @property localDataSource The local data source of cities.
+ * @property fbRepository The repository of Firebase.
+ * @author Víctor Lamas
+ */
 class Repository(db: CitiesRoomDB, private val ds: RemoteDataSource) {
     private val TAG = Repository::class.java.simpleName
     private val localDataSource = LocalDataSource(db.citiesDao())
     private val fbRepository = RepositoryFirebase()
 
+    /**
+     * Fetches all the cities from Firebase.
+     *
+     * @return The list of all together visited cities and their visualizations.
+     */
     fun fetchArrayAllCitiesDocs(): Flow<List<Map<Map<String, String>, Int>>> = runBlocking {
         fbRepository.fetchArrayAllCitiesDocs()
     }
 
+    /**
+     * Creates a document in Firebase.
+     */
     fun createDocument() {
         fbRepository.createDocument()
     }
 
+    /**
+     * Add a city to Firebase.
+     *
+     * @param city The name of the city.
+     * @param countryCode The country code of the city.
+     */
     fun addCity(city: String, countryCode: String) {
         fbRepository.addCity(city, countryCode)
     }
 
+    /**
+     * Retrieves cities from the DB or API, updating the DB if necessary.
+     *
+     * @return The list of cities.
+     */
     fun fetchCities(): Flow<List<City>> {
         return flow {
             var resultDB = emptyList<City>()
             try {
-                // Se intenta recuperar la información de la base de datos.
                 resultDB = localDataSource.getCities()
-
-                // Se intenta recuperar la información de la API.
                 val resultAPI = ds.getCities()
 
-                // Se compara la información de la API y la de la DB.
                 if (resultDB.containsAll(resultAPI)) {
-                    // Se emite el resultado.
                     emit(resultDB)
                 } else {
-                    // Se inserta la información en la DB.
                     localDataSource.insertCities(resultAPI)
                 }
 
-                // Se recupera la información de la base de datos actualizada.
                 resultDB = localDataSource.getCities()
             } catch (e: Exception) {
-                // Se emite el error.
                 Log.e(TAG, "fetchCities: ${e.message}")
             } finally {
-                // Se emite el resultado, ya sea de la DB o de la API.
-                // Una lista con datos o vacío.
                 emit(resultDB)
             }
         }
     }
 
+    /**
+     * Retrieves cities by name from the DB or API, updating the DB if necessary.
+     *
+     * @param name The name of the city to search.
+     * @return The list of cities that match the name.
+     */
     fun fetchCitiesByName(name: String): Flow<List<City>> {
         return flow {
             var resultDB = emptyList<City>()
             try {
-                // Se intenta recuperar la información de la DB.
                 resultDB = localDataSource.getCitiesByName("%$name%")
-
-                // Se intenta recuperar la información de la API.
                 val resultAPI = ds.getCitiesByName(name)
 
-                // Se compara la información de la API y la de la DB.
                 if (resultDB.containsAll(resultAPI)) {
-                    // Se emite el resultado.
                     emit(resultDB)
                 } else {
-                    // Se inserta la información en la DB.
                     localDataSource.insertCities(resultAPI)
                 }
 
-                // Se recupera la información de la DB actualizada
                 resultDB = localDataSource.getCitiesByName("%$name%")
             } catch (e: Exception) {
-                // Se emite el error.
                 Log.e(TAG, "fetchCitiesByName: ${e.message}")
             } finally {
-                // Se emite el resultado, ya sea de la DB o de la API.
-                // Una lista con datos o vacía.
                 emit(resultDB)
             }
         }

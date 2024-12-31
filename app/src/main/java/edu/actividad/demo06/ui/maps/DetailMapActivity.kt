@@ -29,10 +29,22 @@ import edu.actividad.demo06.databinding.ActivityDetailMapBinding
 import edu.actividad.demo06.databinding.AnnotationLayoutBinding
 import edu.actividad.demo06.model.City
 
+/**
+ * Displays the details of a city on a map.
+ *
+ * @property binding Reference to the binding of the activity to access the views.
+ * @property TAG The tag for the log.
+ * @author Víctor Lamas
+ */
 class DetailMapActivity : AppCompatActivity() {
     private lateinit var binding: ActivityDetailMapBinding
     private val TAG = DetailMapActivity::class.java.simpleName
 
+    /**
+     * Displays city details if passed through an Intent.
+     *
+     * @param savedInstanceState The saved instance state.
+     */
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,14 +99,18 @@ class DetailMapActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Shows the city on the map.
+     *
+     * @param city The city to show.
+     */
     private fun showCity(city: City) {
-        // Se obtiene el mapa de la vista
         val mapbox = binding.mapView.mapboxMap
 
-        // Se configura el estilo del mapa
+        // Configure the map style
         mapbox.loadStyle(Style.STANDARD)
 
-        // Se configura la cámara del mapa
+        // Configures the map camera
         mapbox.setCamera(
             CameraOptions.Builder()
                 .center(Point.fromLngLat(city.longitude, city.latitude))
@@ -102,7 +118,7 @@ class DetailMapActivity : AppCompatActivity() {
                 .build()
         )
 
-        // Se instancia la API Annotation y se obtiene PointAnnotationManager
+        // Instantiate the Annotation API and you get PointAnnotationManager
         val annotationApi = binding.mapView.annotations
         val pointAnnotationManager =
             annotationApi.createPointAnnotationManager()
@@ -119,13 +135,13 @@ class DetailMapActivity : AppCompatActivity() {
             )
             .withIconAnchor(IconAnchor.BOTTOM)
 
-        // Se ajusta el tamaño de la marca
+        // Adjusts the size of the mark
         pointAnnotationOptions.iconSize = 0.5
 
-        // Se añade el resultado al mapa
+        // Add the result to the map
         val pntAnnot = pointAnnotationManager.create(pointAnnotationOptions)
 
-        // Se prepara el título para la anotación
+        // Prepares the title for annotation
         val viewAnnotationManager = binding.mapView.viewAnnotationManager
         val viewAnnotation = viewAnnotationManager.addViewAnnotation(
             resId = R.layout.annotation_layout,
@@ -140,7 +156,7 @@ class DetailMapActivity : AppCompatActivity() {
             }
         )
 
-        // Se infla el layout de la anotación
+        // Inflates the annotation layout
         AnnotationLayoutBinding.bind(viewAnnotation).apply {
             tvCityName.text = city.name
             tvCityName.append(getString(R.string.txt_country, city.country))
