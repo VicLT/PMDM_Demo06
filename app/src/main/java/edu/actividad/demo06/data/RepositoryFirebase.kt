@@ -13,22 +13,6 @@ class RepositoryFirebase {
     private val collectionPath = "demo06"
     private val namespace: String = "Víctor Lamas"
 
-    // Get all documents ID from a collection in Firebase
-    /*fun getAllDocumentsId() {
-        db.collection(collectionPath).get().addOnSuccessListener { querySnapshot ->
-            if (!querySnapshot.isEmpty) {
-                documentsId.clear()
-                for (document in querySnapshot.documents) {
-                    val documentId = document.id
-                    documentsId.add(documentId)
-                    Log.i(TAG, "getAllDocumentsId: Document: $documentId")
-                }
-            }
-        }.addOnFailureListener { e ->
-            Log.e(TAG, "getAllNamespaceDocuments: get failed with ", e)
-        }
-    }*/
-
     // Create a document in Firebase
     fun createDocument() {
         val docRef = db.collection("demo06").document(namespace)
