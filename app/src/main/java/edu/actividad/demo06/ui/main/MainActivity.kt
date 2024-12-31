@@ -19,6 +19,8 @@ import edu.actividad.demo06.data.RemoteDataSource
 import edu.actividad.demo06.data.Repository
 import edu.actividad.demo06.databinding.ActivityMainBinding
 import edu.actividad.demo06.ui.maps.DetailMapActivity
+import edu.actividad.demo06.utils.createNotificationChannel
+import edu.actividad.demo06.utils.sendNotification
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
@@ -28,6 +30,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val TAG = MainActivity::class.java.simpleName
     private var query: String? = null
+    private var lastTotalVisits: Int? = null
 
     private val vm: MainViewModel by viewModels {
         val db = (application as CityApplication).cityDB
@@ -60,6 +63,9 @@ class MainActivity : AppCompatActivity() {
             )
             insets
         }
+
+        // Crear el canal de notificaciones
+        createNotificationChannel(this)
 
         // Bloqueo de la rotación
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
@@ -121,22 +127,30 @@ class MainActivity : AppCompatActivity() {
                         name == city.name && countryCode == city.country
                     }
                     .sumOf { visitedCity ->
-                        // Sumar el total de visitas de todos los documentos que coinciden
-                        visitedCity.values.firstOrNull() ?: 0 // Si no hay valor, asignamos 0
+                        visitedCity.values.firstOrNull() ?: 0 // Sumar las visitas
                     }
 
-                // Si la ciudad tiene visitas, actualizamos su valor de "visited"
                 if (totalVisits > 0) {
-                    listOf(city.copy(visited = totalVisits)) // Se asigna el total de visitas acumuladas
+                    listOf(city.copy(visited = totalVisits))
                 } else {
-                    listOf(city.copy(visited = 0)) // Si no tiene visitas, se asigna 0
+                    listOf(city.copy(visited = 0))
                 }
             }
 
             Log.i(TAG, "populateCities: $updatedCities")
-            adapter.submitList(updatedCities) // Actualiza la lista en el adaptador
+            adapter.submitList(updatedCities)
+
+            // Calcular el total de visitas acumuladas
+            val currentTotalVisits = visitedCities.sumOf { it.values.firstOrNull() ?: 0 }
+
+            // Evitar notificación en la primera carga
+            if (lastTotalVisits != null && currentTotalVisits > lastTotalVisits!!) {
+                sendNotification(this@MainActivity)
+            }
+
+            // Actualizar el último total de visitas conocido
+            lastTotalVisits = currentTotalVisits
         }.catch {
-            // Si ocurre un error, mostrar un mensaje de Toast
             Toast.makeText(
                 this@MainActivity,
                 it.message,
