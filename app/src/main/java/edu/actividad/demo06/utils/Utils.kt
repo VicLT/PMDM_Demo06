@@ -13,7 +13,8 @@ private const val CHANNEL_ID = "visited_cities_channel"
 private const val NOTIFICATION_ID = 1
 
 /**
- * Crea un canal de notificación para las ciudades visitadas.
+ * Create a notification channel for the cities visited.
+ * @param context The context of the application.
  */
 @SuppressLint("ObsoleteSdkInt")
 fun createNotificationChannel(context: Context) {
@@ -32,15 +33,16 @@ fun createNotificationChannel(context: Context) {
 }
 
 /**
- * Lanza una notificación para informar sobre la actualización de ciudades visitadas.
+ * Launches a notification to inform about the update of visited cities.
+ * @param context The context of the application.
  */
 @SuppressLint("MissingPermission", "NotificationPermission")
 fun sendNotification(context: Context) {
     val builder = NotificationCompat.Builder(context, CHANNEL_ID)
         .setSmallIcon(R.drawable.ic_notification)
-        .setContentTitle("Ciudades visitadas actualizadas")
-        .setContentText("Las visitas a las ciudades se han actualizado.")
-        .setPriority(NotificationCompat.PRIORITY_DEFAULT) // Para API 27, esto funciona
+        .setContentTitle(context.getString(R.string.notification_title))
+        .setContentText(context.getString(R.string.notification_description))
+        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
     with(NotificationManagerCompat.from(context)) {
         notify(NOTIFICATION_ID, builder.build())
